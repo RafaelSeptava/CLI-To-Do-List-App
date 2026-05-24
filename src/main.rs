@@ -32,6 +32,12 @@ fn main() {
     match subcommand.as_str() {
 
         "list" => {
+            if tasks.is_empty() {
+                println!("\nBelum ada tugas belajar Linux. Tambahkan tugas baru!");
+                println!("Contoh: cargo run -- add [nama_perintah] [deskripsi]");
+                return;
+            }
+
             for task in &tasks {
                 let status = if task.is_completed { "[✓]" } else { "[ ]" };
                 println!("{} {}: {} - {}", status, task.id, task.command_line, task.description);
@@ -45,14 +51,14 @@ fn main() {
             }
 
             let name = &args[2];
-            let desc = &args[3];
+            let desc = args[3..].join(" ");
 
             let new_id = (tasks.len() + 1) as u32;
 
             tasks.push(LinuxTask {
                 id: new_id,
                 command_line: name.to_string(),
-                description: desc.to_string(),
+                description: desc,
                 is_completed: false,
             });
 
