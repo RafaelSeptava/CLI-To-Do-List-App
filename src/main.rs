@@ -21,6 +21,7 @@ fn main() {
         println!("cargo run -- list");
         println!("cargo run -- add [nama_perintah] [deskripsi]");
         println!("cargo run -- complete [id_tugas]");
+        println!("cargo run -- delete [id_tugas]");
 
         return;
     }
@@ -53,7 +54,10 @@ fn main() {
             let name = &args[2];
             let desc = args[3..].join(" ");
 
-            let new_id = (tasks.len() + 1) as u32;
+            let new_id = tasks.iter()
+                .map(|task| task.id)
+                .max()
+                .unwrap_or(0) + 1;
 
             tasks.push(LinuxTask {
                 id: new_id,
@@ -72,12 +76,14 @@ fn main() {
                 return;
             }
 
-            let id_to_find: u32 = args[2].parse().expect("ID harus berupa angka!");
+            let id_to_find: u32 = args[2]
+                .parse()
+                .expect("ID harus berupa angka!");
 
             if let Some(task) = tasks.iter_mut().find(|t| t.id == id_to_find) {
                 task.is_completed = true;
                 save_tasks(&tasks);
-                println!("\nTugas ID {} selesai.", id_to_find);
+                println!("\nTugas ID {} berhasil diselesaikan.", id_to_find);
             }
 
             else {
@@ -85,7 +91,31 @@ fn main() {
             }
         }
 
-        _ => println!("\nPerintah tidak dikenal! Gunakan 'list', 'add', atau 'complete'."),
+        "delete" => {
+            if args.len() < 3 {
+                println!("\nError: Masukkan ID tugas yang ingin dihapus!");
+                return;
+            }
+
+            let id_to_delete: u32 = args[2]
+                .parse()
+                .expect("ID harus berupa angka!");
+
+            let original_len = tasks.len();
+
+            tasks.retain(|task| task.id != id_to_delete);
+
+            if tasks.len() < original_len {
+                save_tasks(&tasks);
+                println!("\nTugas ID {} berhasil dihapus.", id_to_delete);
+            }
+
+            else {
+                println!("\nTugas dengan ID {} tidak ditemukan.", id_to_delete);
+            }
+        }
+
+        _ => println!("\nPerintah tidak dikenal! Gunakan 'list', 'add', 'complete', atau 'delete'."),
     }
 }
 
